@@ -1,10 +1,11 @@
 import React from "react";
+import ReactDOM from "react-dom";
 import Typewriter from "typewriter-effect";
 import { motion, AnimatePresence } from "framer-motion";
 
-const SpeechBubble = ({ text, onDone }) => {
-	return (
-		<AnimatePresence>
+const SpeechBubble = ({ text, onDone, position }) => {
+	const bubbleContent = (
+		<AnimatePresence className="z-20">
 			{text && (
 				<motion.div
 					initial={{
@@ -23,7 +24,11 @@ const SpeechBubble = ({ text, onDone }) => {
 						},
 					}}
 					className="bg-stone-100 text-stone-950 p-2 border-2 border-stone-950
-                    inline-block rounded-md relative max-w-xs shadow-2xl"
+                    inline-block rounded-md relative max-w-xs shadow-2xl z-30"
+					style={{
+						position: "fixed",
+						...position,
+					}}
 				>
 					<div className="w-full h-full relative">
 						<span className="text-stone-500 pr-[1px]">{text}</span>
@@ -31,7 +36,7 @@ const SpeechBubble = ({ text, onDone }) => {
 							<Typewriter
 								options={{
 									cursor: "",
-									delay: 0,
+									delay: 50,
 								}}
 								onInit={(typewriter) => {
 									typewriter
@@ -62,6 +67,10 @@ const SpeechBubble = ({ text, onDone }) => {
 				</motion.div>
 			)}
 		</AnimatePresence>
+	);
+	return ReactDOM.createPortal(
+		bubbleContent,
+		document.getElementById("speech-bubble-root")
 	);
 };
 

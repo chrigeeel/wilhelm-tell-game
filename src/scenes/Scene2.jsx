@@ -10,12 +10,13 @@ import gesslerSrc from "../assets/gessler.png";
 import guardSrc from "../assets/guard.png";
 import poleSrc from "../assets/pole.png";
 
-import Object from "../components/Object";
+import Object, { SoundSteps } from "../components/Object";
 import { sleep } from "../util/util";
 
 import build from "../assets/build.mp3";
 import useSound from "use-sound";
 import { AnimatePresence, motion } from "framer-motion";
+import Transition from "../components/Transition";
 
 const title = "Dorfplatz in Altdorf";
 
@@ -39,7 +40,7 @@ Stange mit Hut wird aufgerichtet
 Wachen: " Dem Hut soll gleiche Ehre wie ihm selbst geschehn!"
 */
 
-const Scene2 = () => {
+const Scene2 = ({ callback }) => {
 	const werner = useRef({});
 	const walther = useRef({});
 	const arnold = useRef({});
@@ -70,9 +71,9 @@ const Scene2 = () => {
 		);
 
 		await Promise.all([
-			arnold.current.move(-7, 0, 20),
-			werner.current.move(-3, 0, 10),
-			walther.current.move(3, 0, 10),
+			arnold.current.move(-7, 0, 20, SoundSteps),
+			werner.current.move(-3, 0, 10, SoundSteps),
+			walther.current.move(3, 0, 10, SoundSteps),
 		]);
 
 		await werner.current.speak(
@@ -87,9 +88,9 @@ const Scene2 = () => {
 		await sleep(2000);
 
 		await Promise.all([
-			guard1.current.move(60, 0, 30),
-			gessler.current.move(60, 0, 30),
-			guard2.current.move(60, 0, 30),
+			guard1.current.move(60, 0, 30, SoundSteps),
+			gessler.current.move(60, 0, 30, SoundSteps),
+			guard2.current.move(60, 0, 30, SoundSteps),
 		]);
 
 		await gessler.current.speak(
@@ -105,18 +106,13 @@ const Scene2 = () => {
 				"Dem Hut soll gleiche Ehre wie ihm selbst geschehn!"
 			),
 		]);
+
+		callback();
 	};
 
 	return (
 		<Container>
-			<button
-				onClick={() => {
-					pipeline();
-				}}
-				className="absolute top-10 left-10 bg-red-500 z-50 w-36 h-14"
-			>
-				Play
-			</button>
+			<Transition title={title} onTransitionEnd={pipeline} />
 			<Play src={background}>
 				{displayPole && (
 					<Object
@@ -126,7 +122,7 @@ const Scene2 = () => {
 							bottom: 10,
 						}}
 						startDirection={"right"}
-						height={300}
+						height={(300 / 973) * 100}
 						src={poleSrc}
 					/>
 				)}
@@ -137,7 +133,7 @@ const Scene2 = () => {
 						bottom: 3,
 					}}
 					startDirection={"right"}
-					height={200}
+					height={(200 / 973) * 100}
 					src={waltherSrc}
 					name="Walther"
 				/>
@@ -148,7 +144,7 @@ const Scene2 = () => {
 						bottom: 3,
 					}}
 					src={wernerSrc}
-					height={200}
+					height={(200 / 973) * 100}
 					startDirection={"left"}
 					name="Werner"
 				/>
@@ -159,7 +155,7 @@ const Scene2 = () => {
 						bottom: 3,
 					}}
 					startDirection={"left"}
-					height={200}
+					height={(200 / 973) * 100}
 					src={arnoldSrc}
 					name="Arnold"
 				/>
@@ -171,7 +167,7 @@ const Scene2 = () => {
 						bottom: 3,
 					}}
 					startDirection={"right"}
-					height={200}
+					height={(200 / 973) * 100}
 					src={guardSrc}
 					name="Wache"
 				/>
@@ -182,7 +178,7 @@ const Scene2 = () => {
 						bottom: 3,
 					}}
 					startDirection={"right"}
-					height={200}
+					height={(200 / 973) * 100}
 					src={gesslerSrc}
 					name="Gessler"
 				/>
@@ -193,7 +189,7 @@ const Scene2 = () => {
 						bottom: 3,
 					}}
 					startDirection={"right"}
-					height={200}
+					height={(200 / 973) * 100}
 					src={guardSrc}
 					name="Wache"
 				/>

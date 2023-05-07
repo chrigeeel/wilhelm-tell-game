@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { motion } from "framer-motion";
 import useSound from "use-sound";
@@ -8,7 +8,7 @@ import walking from "../assets/walking.mp3";
 import running from "../assets/running.mp3";
 import villager from "../assets/villager.mp3";
 import swimming from "../assets/swimming.mp3";
-import { getRandomInt, sleep } from "../util/util";
+import { getRandomInt, sleep, useWindowSize } from "../util/util";
 
 const villagerSprite = {
 	0: [0, 900],
@@ -66,6 +66,7 @@ const Object = ({
 		sprite: villagerSprite,
 	});
 	const [playSwimming, swimmingSound] = useSound(swimming);
+	const [rotateDeg, setRotateDeg] = useState(0);
 
 	const move = (
 		horizontalPercentage,
@@ -140,11 +141,11 @@ const Object = ({
 			setSpeakData({
 				text,
 				callback: () => {
-					resolve();
 					setSpeakData({
 						text: "",
 						callback: () => {},
 					});
+					resolve();
 				},
 			});
 		});
@@ -179,19 +180,41 @@ const Object = ({
 		setDirection(direction);
 	};
 
+	const rotate = (deg) => {
+		setRotateDeg(deg);
+	};
+
 	myRef.current.move = move;
 	myRef.current.jump = jump;
 	myRef.current.speak = speak;
 	myRef.current.scale = scale;
 	myRef.current.direct = direct;
+	myRef.current.rotate = rotate;
 
 	useEffect(() => {
 		setAnimate({
-			height: `${(height * size) / 100}px`,
+			height: `${(height * size) / 100}%`,
 			left: `${coordinates.left}%`,
 			bottom: `${coordinates.bottom}%`,
 		});
 	}, [coordinates, size]);
+
+	const characterRef = useRef(null);
+	const [speechBubblePosition, setSpeechBubblePosition] = useState({});
+	const { width } = useWindowSize();
+
+	useEffect(() => {
+		if (characterRef.current) {
+			const rect = characterRef.current.getBoundingClientRect();
+			console.log(rect);
+			console.log(characterRef.current.offsetWidth);
+			const bubblePosition = {
+				left: rect.left, // Center the speech bubble above the character
+				top: rect.top - characterRef.current.offsetHeight, // Add a 10px distance to the top of the character
+			};
+			setSpeechBubblePosition(bubblePosition);
+		}
+	}, [characterRef, speakData, width]);
 
 	return (
 		<div
@@ -204,7 +227,10 @@ const Object = ({
 			<div className="relative h-full w-full">
 				<motion.div
 					initial={{
-						height: `${(height * size) / 100}px`,
+						height: `${(height * size) / 100}%`,
+					}}
+					style={{
+						rotate: `${rotateDeg}deg`,
 					}}
 					animate={animate}
 					transition={transition}
@@ -229,13 +255,20 @@ const Object = ({
 						)}
 
 						<div
-							className="flex items-center justify-center
-							absolute bottom-[125%] left-1/2 -translate-x-1/2 bg-red w-80 z-50"
+							className="flex items-center justify-center overflow-visible
+							absolute bottom-[125%] left-1/2 -translate-x-1/2 bg-red w-80"
 						>
 							<SpeechBubble
+								position={speechBubblePosition}
 								text={speakData.text}
 								onDone={speakData.callback}
 							/>
+							<span
+								ref={characterRef}
+								className="bg-transparent text-transparent pr-[1px]"
+							>
+								{speakData.text}
+							</span>
 						</div>
 					</div>
 				</motion.div>

@@ -15,7 +15,7 @@ import Play from "../components/Play";
 
 const title = "Am Vierwaldstätter See";
 
-const Scene1 = () => {
+const Scene1 = ({ callback }) => {
 	const wilhelmTell = useRef({});
 	const kuoni = useRef({});
 	const ruodi = useRef({});
@@ -73,19 +73,13 @@ const Scene1 = () => {
 			kuoni.current.move(-80, 0, 30),
 			ruodi.current.move(-80, 0, 30),
 		]);
+
+		callback();
 	};
 
 	return (
 		<Container>
-			<button
-				onClick={() => {
-					pipeline();
-				}}
-				className="absolute top-10 left-10 bg-red-500 z-50 w-36 h-14"
-			>
-				Play
-			</button>
-			{/*<Transition title={title} onTransitionEnd={pipeline} />*/}
+			<Transition title={title} onTransitionEnd={pipeline} />
 			<Play src={background}>
 				<Object
 					myRef={boat}
@@ -94,7 +88,7 @@ const Scene1 = () => {
 						bottom: 47,
 					}}
 					src={boatSrc}
-					height={70}
+					height={(70 / 973) * 100}
 				/>
 				<Object
 					myRef={wilhelmTell}
@@ -104,7 +98,8 @@ const Scene1 = () => {
 						left: 10,
 						bottom: 18,
 					}}
-					height={200}
+					startDirection={"right"}
+					height={(200 / 973) * 100}
 				/>
 				<Object
 					myRef={kuoni}
@@ -114,7 +109,7 @@ const Scene1 = () => {
 						left: 100,
 						bottom: 18,
 					}}
-					height={200}
+					height={(200 / 973) * 100}
 				/>
 				<Object
 					myRef={ruodi}
@@ -124,7 +119,7 @@ const Scene1 = () => {
 						left: 110,
 						bottom: 18,
 					}}
-					height={200}
+					height={(200 / 973) * 100}
 				/>
 				<Object
 					myRef={konradBaumgarten}
@@ -134,7 +129,7 @@ const Scene1 = () => {
 						left: 120,
 						bottom: 18,
 					}}
-					height={200}
+					height={(200 / 973) * 100}
 				/>
 			</Play>
 		</Container>

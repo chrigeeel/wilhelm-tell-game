@@ -1,7 +1,5 @@
 import React from "react";
 
-import * as AspectRatio from "@radix-ui/react-aspect-ratio";
-
 const Play = ({ children, src }) => {
 	return (
 		<div className="flex w-full h-full">
@@ -14,7 +12,7 @@ const Play = ({ children, src }) => {
 				/>
 				{children}
 			</div>
-			<div className="flex flex-grow bg-stone-950  z-10"></div>
+			<div className="flex flex-grow bg-stone-950 z-10"></div>
 		</div>
 	);
 };
