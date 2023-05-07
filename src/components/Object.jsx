@@ -6,139 +6,247 @@ import SpeechBubble from "./SpeechBubble";
 
 import walking from "../assets/walking.mp3";
 import running from "../assets/running.mp3";
+import villager from "../assets/villager.mp3";
+import swimming from "../assets/swimming.mp3";
+import { getRandomInt, sleep } from "../util/util";
+
+const villagerSprite = {
+	0: [0, 900],
+	1: [1000, 900],
+	2: [2000, 900],
+	3: [3000, 900],
+	4: [4000, 900],
+	5: [5000, 900],
+	6: [6000, 900],
+	7: [7000, 900],
+	8: [8000, 900],
+	9: [9000, 900],
+	10: [10000, 900],
+	11: [11000, 900],
+	12: [12000, 900],
+	13: [13000, 900],
+	14: [14000, 900],
+};
+
+export const SoundSteps = "steps";
+export const SoundSwim = "swim";
 
 // speed is in percent per second
-const Object = ({ className, myRef, name, startPosition }) => {
-    const [coordinates, setCoordinates] = useState({
-        left: 0,
-        bottom: 0,
-    });
-    const [animate, setAnimate] = useState({
-        left: "0%",
-        bottom: "0%",
-    });
-    const [transition, setTransition] = useState({
-        ease: "linear",
-        duration: 1,
-    });
-    const [speakData, setSpeakData] = useState({
-        text: "",
-        callback: () => {},
-    });
+const Object = ({
+	className,
+	myRef,
+	name,
+	startPosition,
+	height,
+	src,
+	startDirection,
+}) => {
+	const [coordinates, setCoordinates] = useState({
+		left: 0,
+		bottom: 0,
+	});
+	const [animate, setAnimate] = useState({
+		left: "0%",
+		bottom: "0%",
+	});
+	const [transition, setTransition] = useState({
+		ease: "linear",
+		duration: 1,
+	});
+	const [speakData, setSpeakData] = useState({
+		text: "",
+		callback: () => {},
+	});
+	const [size, setSize] = useState(100);
+	const [direction, setDirection] = useState(startDirection);
 
-    const [playWalking, { stopWalking }] = useSound(walking);
-    const [playRunning, { stopRunning }] = useSound(running);
+	const [playWalking, walkingSound] = useSound(walking);
+	const [playRunning, runningSound] = useSound(running);
+	const [playVillager, villagerSound] = useSound(villager, {
+		sprite: villagerSprite,
+	});
+	const [playSwimming, swimmingSound] = useSound(swimming);
 
-    // speed is in percentage per seconds
-    const moveHorizontal = (percentage, speed) => {
-        setCoordinates((prevData) => ({
-            left: prevData.left + percentage,
-            bottom: prevData.bottom,
-        }));
-        const duration = Math.abs(percentage / speed);
-        setTransition({
-            ease: "linear",
-            duration,
-        });
-        if (speed > 30) {
-            playRunning();
-        } else {
-            playWalking();
-        }
+	const move = (
+		horizontalPercentage,
+		verticalPercentage,
+		speed,
+		sound = "none"
+	) => {
+		setCoordinates((prevData) => ({
+			left: prevData.left + horizontalPercentage,
+			bottom: prevData.bottom + verticalPercentage,
+		}));
+		const duration = Math.abs(
+			Math.max(
+				Math.abs(horizontalPercentage),
+				Math.abs(verticalPercentage)
+			) / speed
+		);
+		setTransition({
+			ease: "linear",
+			duration,
+		});
+		switch (sound) {
+			case SoundSteps:
+				if (speed > 40) {
+					playRunning();
+				} else {
+					playWalking();
+				}
+				break;
+			case SoundSwim:
+				playSwimming();
+				break;
+		}
 
-        return new Promise((resolve, _) => {
-            setTimeout(() => {
-                resolve();
-                if (speed > 30) {
-                    stopRunning();
-                } else {
-                    stopWalking();
-                }
-            }, duration * 1000);
-        });
-    };
+		return new Promise((resolve, _) => {
+			setTimeout(() => {
+				resolve();
+				switch (sound) {
+					case SoundSteps:
+						if (speed > 40) {
+							runningSound.stop();
+						} else {
+							walkingSound.stop();
+						}
+						break;
+					case SoundSwim:
+						swimmingSound.stop();
+						break;
+				}
+			}, duration * 1000);
+		});
+	};
 
-    const speak = async (text) => {
-        const promise = new Promise((resolve, _) => {
-            setSpeakData({
-                text,
-                callback: () => {
-                    resolve();
-                    setSpeakData({
-                        text: "",
-                        callback: () => {},
-                    });
-                },
-            });
-        });
+	const scale = (percentage, speed) => {
+		const duration = percentage / speed;
 
-        return promise;
-    };
+		setSize(percentage);
+		setTransition({
+			ease: "linear",
+			duration,
+		});
 
-    const jump = (upPercentage, fallPercentage, speed) => {
-        setCoordinates((prevData) => ({
-            left: prevData.left,
-            bottom: prevData.bottom + upPercentage,
-        }));
-        const duration = upPercentage / speed;
-        setTransition({
-            ease: "linear",
-            duration,
-        });
-        setTimeout(() => {
-            setCoordinates((prevData) => ({
-                left: prevData.left,
-                bottom: prevData.bottom - fallPercentage,
-            }));
-            const duration = fallPercentage / speed;
-            setTransition({
-                ease: "linear",
-                duration,
-            });
-        }, duration * 1000);
-    };
+		return sleep(duration * 1000);
+	};
 
-    myRef.current.moveHorizontal = moveHorizontal;
-    myRef.current.jump = jump;
-    myRef.current.speak = speak;
+	const speak = async (text) => {
+		const id = `${getRandomInt(14)}`;
+		playVillager({
+			id,
+		});
+		const promise = new Promise((resolve, _) => {
+			setSpeakData({
+				text,
+				callback: () => {
+					resolve();
+					setSpeakData({
+						text: "",
+						callback: () => {},
+					});
+				},
+			});
+		});
 
-    useEffect(() => {
-        setAnimate({
-            left: `${coordinates.left}%`,
-            bottom: `${coordinates.bottom}%`,
-            ease: "linear",
-        });
-    }, [coordinates]);
+		return promise;
+	};
 
-    return (
-        <div
-            style={{
-                left: `${startPosition.left}%`,
-                bottom: `${startPosition.bottom}%`,
-            }}
-            className="absolute h-full w-full"
-        >
-            <div className="relative h-full w-full">
-                <motion.div
-                    animate={animate}
-                    transition={transition}
-                    className={`absolute left-0 bottom-0 ${className}`}
-                >
-                    <div className="relative w-full h-full overflow-visible">
-                        <div className="absolute -top-10 bg-stone-900 w-full text-center">
-                            <span className="text-white text-lg">{name}</span>
-                        </div>
-                        <div className="absolute bottom-36 left-[90%] bg-red w-80">
-                            <SpeechBubble
-                                text={speakData.text}
-                                onDone={speakData.callback}
-                            />
-                        </div>
-                    </div>
-                </motion.div>
-            </div>
-        </div>
-    );
+	const jump = (upPercentage, fallPercentage, speed) => {
+		setCoordinates((prevData) => ({
+			left: prevData.left,
+			bottom: prevData.bottom + upPercentage,
+		}));
+		const duration = upPercentage / speed;
+		setTransition({
+			ease: "linear",
+			duration,
+		});
+		setTimeout(() => {
+			setCoordinates((prevData) => ({
+				left: prevData.left,
+				bottom: prevData.bottom - fallPercentage,
+			}));
+			const duration = fallPercentage / speed;
+			setTransition({
+				ease: "linear",
+				duration,
+			});
+		}, duration * 1000);
+	};
+
+	const direct = (direction) => {
+		setDirection(direction);
+	};
+
+	myRef.current.move = move;
+	myRef.current.jump = jump;
+	myRef.current.speak = speak;
+	myRef.current.scale = scale;
+	myRef.current.direct = direct;
+
+	useEffect(() => {
+		setAnimate({
+			height: `${(height * size) / 100}px`,
+			left: `${coordinates.left}%`,
+			bottom: `${coordinates.bottom}%`,
+		});
+	}, [coordinates, size]);
+
+	return (
+		<div
+			style={{
+				left: `${startPosition.left}%`,
+				bottom: `${startPosition.bottom}%`,
+			}}
+			className="absolute h-full w-full"
+		>
+			<div className="relative h-full w-full">
+				<motion.div
+					initial={{
+						height: `${(height * size) / 100}px`,
+					}}
+					animate={animate}
+					transition={transition}
+					className={`absolute left-0 bottom-0 ${className}`}
+				>
+					<div className="flex relative w-full h-full overflow-visible">
+						{src && (
+							<img
+								src={src}
+								className={`h-full drop-shadow-2xl ${
+									direction === "right" && "-scale-x-100"
+								}`}
+								alt=""
+							/>
+						)}
+						{name && (
+							<div className="absolute -top-8 left-1/2 -translate-x-1/2">
+								<span className="text-white text-center bg-stone-900 bg-opacity-70 px-2 py-1 shadow-lg whitespace-nowrap">
+									{name}
+								</span>
+							</div>
+						)}
+
+						<div
+							className="flex items-center justify-center
+							absolute bottom-[125%] left-1/2 -translate-x-1/2 bg-red w-80 z-50"
+						>
+							<SpeechBubble
+								text={speakData.text}
+								onDone={speakData.callback}
+							/>
+						</div>
+					</div>
+				</motion.div>
+			</div>
+		</div>
+	);
+};
+
+Object.defaultProps = {
+	height: 100,
+	startDirection: "left",
 };
 
 export default Object;

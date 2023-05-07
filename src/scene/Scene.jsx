@@ -1,5 +1,4 @@
 import React, { useRef } from "react";
-import Player from "../components/Player";
 import Object from "../components/Object";
 
 // coordinates are in %

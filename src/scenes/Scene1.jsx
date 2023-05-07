@@ -1,90 +1,144 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef } from "react";
 import Container from "../components/Container";
 import Transition from "../components/Transition";
-import Object from "../components/Object";
+import Object, { SoundSteps, SoundSwim } from "../components/Object";
 import SpeechBubble from "../components/SpeechBubble";
 import { sleep } from "../util/util";
+
+import background from "../assets/background_scene_1.png";
+import boatSrc from "../assets/boat.png";
+import wilhelmTellSrc from "../assets/wilhelmTell.png";
+import kuoniSrc from "../assets/kuoni.png";
+import ruodiSrc from "../assets/ruodi.png";
+import konradBaumgartenSrc from "../assets/konradBaumgarten.png";
+import Play from "../components/Play";
 
 const title = "Am Vierwaldstätter See";
 
 const Scene1 = () => {
-    const wilhelmTell = useRef({});
-    const kuoni = useRef({});
-    const ruodi = useRef({});
-    const konradBaumgarten = useRef({});
+	const wilhelmTell = useRef({});
+	const kuoni = useRef({});
+	const ruodi = useRef({});
+	const konradBaumgarten = useRef({});
+	const boat = useRef({});
 
-    const pipeline = async () => {
-        console.log("pipeline start");
-        kuoni.current.moveHorizontal(-50, 40);
-        ruodi.current.moveHorizontal(-50, 40);
-        await sleep(2000);
-        await konradBaumgarten.current.moveHorizontal(-50, 60);
-        console.log("done");
-        await sleep(500);
-        await kuoni.current.speak(
-            "Seht, dort ist Konrad Baumgarten, der vor den habsburgischen Soldaten flieht!"
-        );
-        await ruodi.current.speak("Nun, nun, was gibt's so eilig?");
-        await konradBaumgarten.current.speak(
-            "Eilt, eilt, die Habsburger sind mir dicht schon an den Fersen! Bitte nehmt mich auf das Boot und bringt mich über den See."
-        );
-        await ruodi.current.speak(
-            "Ein schweres Ungewitter ist Im Anzug. Ihr müsst warten... Ich kann nicht steuern gegen Sturm und Wellen."
-        );
-        await wilhelmTell.current.moveHorizontal(20, 20);
-        await wilhelmTell.current.speak(
-            "Wo's not tut, Fährmann, lässt sich alles wagen. Ich will's mit meiner schwachen Kraft versuchen. Lasst uns schnell handeln!"
-        );
-    };
+	const pipeline = async () => {
+		console.log("pipeline start");
+		await Promise.all([
+			kuoni.current.move(-60, 0, 40, SoundSteps),
+			ruodi.current.move(-64, 0, 40, SoundSteps),
+		]);
+		await sleep(1000);
+		await konradBaumgarten.current.move(-55, 0, 60, SoundSteps);
+		console.log("done");
+		kuoni.current.direct("right"), await sleep(500);
+		await kuoni.current.speak(
+			"Seht, dort ist Konrad Baumgarten, der vor den habsburgischen Soldaten flieht!"
+		);
+		await ruodi.current.direct("right");
+		await ruodi.current.speak("Nun, nun, was gibt's so eilig?");
+		await konradBaumgarten.current.speak(
+			"Eilt, eilt, die Habsburger sind mir dicht schon an den Fersen! Bitte nehmt mich auf das Boot und bringt mich über den See."
+		);
+		await ruodi.current.speak(
+			"Ein schweres Ungewitter ist Im Anzug. Ihr müsst warten... Ich kann nicht steuern gegen Sturm und Wellen."
+		);
+		await wilhelmTell.current.move(15, 0, 20, SoundSteps);
+		await wilhelmTell.current.speak(
+			"Wo's not tut, Fährmann, lässt sich alles wagen. Ich will's mit meiner schwachen Kraft versuchen. Lasst uns schnell handeln!"
+		);
+		await sleep(500);
+		await Promise.all([
+			wilhelmTell.current.move(13, 25, 20, SoundSteps),
+			konradBaumgarten.current.move(-13, 25, 30, SoundSteps),
+		]);
+		await sleep(500);
+		await Promise.all([
+			wilhelmTell.current.move(4, 8, 5),
+			konradBaumgarten.current.move(7, 8, 5),
+		]);
 
-    return (
-        <Container>
-            {/*<Transition title={title} onTransitionEnd={pipeline} /> */}
-            <Object
-                className="h-24 w-16 bg-red-500"
-                myRef={wilhelmTell}
-                name="Wilhelm Tell"
-                startPosition={{
-                    left: 10,
-                    bottom: 10,
-                }}
-            />
-            <Object
-                className="h-24 w-16 bg-emerald-500"
-                myRef={kuoni}
-                name="Kuoni"
-                startPosition={{
-                    left: 100,
-                    bottom: 10,
-                }}
-            />{" "}
-            <Object
-                className="h-24 w-16 bg-amber-500"
-                myRef={ruodi}
-                name="Ruodi"
-                startPosition={{
-                    left: 110,
-                    bottom: 10,
-                }}
-            />
-            <Object
-                className="h-24 w-16 bg-slate-500"
-                myRef={konradBaumgarten}
-                name="Konrad Baumgarten"
-                startPosition={{
-                    left: 120,
-                    bottom: 10,
-                }}
-            />
-            <button
-                onClick={async () => {
-                    await pipeline();
-                }}
-            >
-                start
-            </button>
-        </Container>
-    );
+		Promise.all([
+			wilhelmTell.current.scale(60, 12),
+			wilhelmTell.current.move(2, 10, 1, SoundSwim),
+			konradBaumgarten.current.scale(60, 12),
+			konradBaumgarten.current.move(-7, 10, 1),
+			boat.current.scale(60, 12),
+			boat.current.move(0, 12, 1.2),
+		]);
+
+		await sleep(1000);
+
+		await Promise.all([
+			kuoni.current.move(-80, 0, 30),
+			ruodi.current.move(-80, 0, 30),
+		]);
+	};
+
+	return (
+		<Container>
+			<button
+				onClick={() => {
+					pipeline();
+				}}
+				className="absolute top-10 left-10 bg-red-500 z-50 w-36 h-14"
+			>
+				Play
+			</button>
+			{/*<Transition title={title} onTransitionEnd={pipeline} />*/}
+			<Play src={background}>
+				<Object
+					myRef={boat}
+					startPosition={{
+						left: 45,
+						bottom: 47,
+					}}
+					src={boatSrc}
+					height={70}
+				/>
+				<Object
+					myRef={wilhelmTell}
+					name="Wilhelm Tell"
+					src={wilhelmTellSrc}
+					startPosition={{
+						left: 10,
+						bottom: 18,
+					}}
+					height={200}
+				/>
+				<Object
+					myRef={kuoni}
+					name="Kuoni"
+					src={kuoniSrc}
+					startPosition={{
+						left: 100,
+						bottom: 18,
+					}}
+					height={200}
+				/>
+				<Object
+					myRef={ruodi}
+					name="Ruodi"
+					src={ruodiSrc}
+					startPosition={{
+						left: 110,
+						bottom: 18,
+					}}
+					height={200}
+				/>
+				<Object
+					myRef={konradBaumgarten}
+					name="Konrad Baumgarten"
+					src={konradBaumgartenSrc}
+					startPosition={{
+						left: 120,
+						bottom: 18,
+					}}
+					height={200}
+				/>
+			</Play>
+		</Container>
+	);
 };
 
 export default Scene1;
